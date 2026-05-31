@@ -131,43 +131,6 @@ select.fi{appearance:none;cursor:pointer}
 @keyframes spin{to{transform:rotate(360deg)}}
 .loading-screen{min-height:100vh;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:14px;background:var(--bg)}
 `;
-/* ===== RESPONSIVE ===== */
-
-@media screen and (max-width:900px){
-
-.app{
-  flex-direction:column;
-}
-
-.sidebar{
-  position:relative;
-  width:100%;
-  min-height:auto;
-  border-right:none;
-  border-bottom:1px solid var(--border);
-  flex-direction:row;
-  overflow-x:auto;
-  padding:12px;
-  gap:8px;
-}
-
-.main{
-  margin-left:0;
-  padding:18px;
-}
-
-.s4,.s3,.g2,.g3,.s2g{
-  grid-template-columns:1fr !important;
-}
-
-.ph{
-  flex-direction:column;
-  gap:12px;
-  align-items:flex-start;
-}
-
-}
-
 // ── Login ──────────────────────────────────────────────────
 function LoginScreen() {
   const [email,setEmail]=useState("");const [pw,setPw]=useState("");
