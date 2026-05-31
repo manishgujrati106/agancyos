@@ -168,7 +168,7 @@ function PCard({project,clients,employees,onClick,money=true}){
     {assigned.length>0&&<div className="pills">{assigned.map(e=><span key={e.id} className="pill" style={{background:e.color+"22",color:e.color}}>{(e.full_name||"?").split(" ")[0]}</span>)}</div>}
     <div className="pb"><div className="pf" style={{width:`${project.progress||0}%`,background:type.color}}/></div>
     <div className="pc-foot">
-      {money?<span style={{fontSize:11,color:"var(--muted)",fontFamily:"var(--mono)"}}>${(project.paid||0).toLocaleString()} / ${(project.budget||0).toLocaleString()}</span>
+      {money?<span style={{fontSize:11,color:"var(--muted)",fontFamily:"var(--mono)"}}>₹{(project.paid||0).toLocaleString("en-IN")} / ₹{(project.budget||0).toLocaleString("en-IN")}</span>
             :<span style={{fontSize:11,color:"var(--muted)",fontFamily:"var(--mono)"}}>{project.progress||0}% done</span>}
       <span className="pc-dead">📅 {project.deadline}</span>
     </div>
