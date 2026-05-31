@@ -182,3 +182,28 @@
     border-right-color: var(--border);
   }
 }
+/* PHONE + DESKTOP RESPONSIVE */
+
+.lc{
+  width:100%;
+  max-width:420px;
+  margin:auto;
+  padding:20px;
+}
+
+/* Desktop */
+@media screen and (min-width: 900px){
+
+  .lc{
+    max-width:1200px;
+    padding:40px;
+  }
+
+  .dashboard,
+  .main-layout,
+  .content{
+    display:flex;
+    gap:24px;
+  }
+
+}
