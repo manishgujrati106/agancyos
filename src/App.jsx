@@ -419,48 +419,44 @@ function OwnShell({user,clients,setClients,projects,setProjects,tasks,setTasks,e
 
 // ── Root ──────────────────────────────────────────────────
 export default function App(){
-  const[session,setSession]=useState(null);const[profile,setProfile]=useState(null);const[appLoading,setAppLoading]=useState(true);
+  const[session,setSession]=useState(null);const[profile,setProfile]=useState(null);const[appLoading,setAppLoading]=useState(false);
   const[clients,setClients]=useState([]);const[projects,setProjects]=useState([]);const[tasks,setTasks]=useState([]);const[employees,setEmployees]=useState([]);
 
- useEffect(() => {
-  console.log("APP STARTED");
+  useEffect(()=>{
+    console.log("APP STARTED");
+    supabase.auth.getSession().then(async ({ data:{session}, error }) => {
 
-  supabase.auth.getSession().then(async ({ data:{session}, error }) => {
+  console.log("SESSION:", session, error);
 
-    console.log("SESSION:", session, error);
+  setSession(session);
 
-    try {
-      setSession(session);
+  if(session){
+    await loadProfile(session.user.id);
+  }
 
-      if(session){
-        await loadProfile(session.user.id);
-      }
+  setAppLoading(false);
 
-    } catch(err) {
-      console.error("LOAD PROFILE FAILED:", err);
-    } finally {
-      setAppLoading(false);
+});
+    const{data:{subscription}}=supabase.auth.onAuthStateChange(async(event,session)=>{setSession(session);if(session)await loadProfile(session.user.id);else{setProfile(null);}});
+    return()=>subscription.unsubscribe();
+  },[]);
+
+  const loadProfile = async (uid) => {
+  try {
+    const { data, error } = await supabase
+      .from("profiles")
+      .select("*")
+      .eq("id", uid)
+      .single();
+
+    console.log("PROFILE:", data, error);
+
+    if (error) {
+      setProfile(null);
+      return;
     }
 
-  });
-
-  const { data:{subscription} } =
-    supabase.auth.onAuthStateChange(async(event, session) => {
-      setSession(session);
-
-      if(session){
-        await loadProfile(session.user.id);
-      } else {
-        setProfile(null);
-      }
-    });
-
-  return () => subscription.unsubscribe();
-
-}, []);
-
     setProfile(data);
-
   } catch (e) {
     console.log("LOAD PROFILE ERROR:", e);
     setProfile(null);
@@ -476,24 +472,12 @@ export default function App(){
     ]);
     setClients(c.data||[]);setProjects(p.data||[]);setTasks(t.data||[]);setEmployees(e.data||[]);
   };
-useEffect(() => {
-  if(profile){
-    loadAll();
-  }
-}, [profile]);
+
   const logout=async()=>{await supabase.auth.signOut();setSession(null);setProfile(null);};
 
   if(appLoading)return(<><style>{css}</style><div className="loading-screen"><div className="ll">AGENCY<em>OS</em></div><div className="spinner"/></div></>);
-if(session && !profile){
-  return (
-    <>
-      <style>{css}</style>
-      <div className="loading-screen">
-        <div className="spinner"></div>
-      </div>
-    </>
-  );
-}  return(<><style>{css}</style>
+
+  return(<><style>{css}</style>
     {!session&&<LoginScreen/>}
     {session&&profile?.is_owner&&<OwnShell user={profile} clients={clients} setClients={setClients} projects={projects} setProjects={setProjects} tasks={tasks} setTasks={setTasks} employees={employees} setEmployees={setEmployees} onLogout={logout}/>}
     {session&&profile&&!profile.is_owner&&<EmpView user={profile} clients={clients} projects={projects} tasks={tasks} setTasks={setTasks} employees={employees} onLogout={logout}/>}
