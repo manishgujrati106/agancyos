@@ -491,7 +491,11 @@ export default function App(){
     ]);
     setClients(c.data||[]);setProjects(p.data||[]);setTasks(t.data||[]);setEmployees(e.data||[]);
   };
-
+useEffect(() => {
+  if(profile){
+    loadAll();
+  }
+}, [profile]);
   const logout=async()=>{await supabase.auth.signOut();setSession(null);setProfile(null);};
 
   if(appLoading)return(<><style>{css}</style><div className="loading-screen"><div className="ll">AGENCY<em>OS</em></div><div className="spinner"/></div></>);
