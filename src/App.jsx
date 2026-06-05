@@ -422,39 +422,42 @@ export default function App(){
   const[session,setSession]=useState(null);const[profile,setProfile]=useState(null);const[appLoading,setAppLoading]=useState(true);
   const[clients,setClients]=useState([]);const[projects,setProjects]=useState([]);const[tasks,setTasks]=useState([]);const[employees,setEmployees]=useState([]);
 
-  useEffect(()=>{
-    console.log("APP STARTED");
-    supabase.auth.getSession().then(async ({ data:{session}, error }) => {
+ useEffect(() => {
+  console.log("APP STARTED");
 
-  console.log("SESSION:", session, error);
+  supabase.auth.getSession().then(async ({ data:{session}, error }) => {
 
-  setSession(session);
+    console.log("SESSION:", session, error);
 
-  if(session){
-    await loadProfile(session.user.id);
-  }
+    try {
+      setSession(session);
 
-  setAppLoading(false);
+      if(session){
+        await loadProfile(session.user.id);
+      }
 
-});
-    const{data:{subscription}}=supabase.auth.onAuthStateChange(async(event,session)=>{setSession(session);if(session)await loadProfile(session.user.id);else{setProfile(null);}});
-    return()=>subscription.unsubscribe();
-  },[]);
-
- const loadProfile = async (uid) => {
-  try {
-    const { data, error } = await supabase
-      .from("profiles")
-      .select("*")
-      .eq("id", uid)
-      .single();
-
-    console.log("PROFILE:", data, error);
-
-    if (error) {
-      setProfile(null);
-      return;
+    } catch(err) {
+      console.error("LOAD PROFILE FAILED:", err);
+    } finally {
+      setAppLoading(false);
     }
+
+  });
+
+  const { data:{subscription} } =
+    supabase.auth.onAuthStateChange(async(event, session) => {
+      setSession(session);
+
+      if(session){
+        await loadProfile(session.user.id);
+      } else {
+        setProfile(null);
+      }
+    });
+
+  return () => subscription.unsubscribe();
+
+}, []);
 
     setProfile(data);
 
