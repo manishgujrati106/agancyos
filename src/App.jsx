@@ -419,7 +419,7 @@ function OwnShell({user,clients,setClients,projects,setProjects,tasks,setTasks,e
 
 // ── Root ──────────────────────────────────────────────────
 export default function App(){
-  const[session,setSession]=useState(null);const[profile,setProfile]=useState(null);const[appLoading,setAppLoading]=useState(false);
+  const[session,setSession]=useState(null);const[profile,setProfile]=useState(null);const[appLoading,setAppLoading]=useState(true);
   const[clients,setClients]=useState([]);const[projects,setProjects]=useState([]);const[tasks,setTasks]=useState([]);const[employees,setEmployees]=useState([]);
 
   useEffect(()=>{
@@ -441,7 +441,7 @@ export default function App(){
     return()=>subscription.unsubscribe();
   },[]);
 
-  const loadProfile = async (uid) => {
+ const loadProfile = async (uid) => {
   try {
     const { data, error } = await supabase
       .from("profiles")
@@ -457,6 +457,22 @@ export default function App(){
     }
 
     setProfile(data);
+
+    const [c,p,t,e] = await Promise.all([
+      supabase.from("clients").select("*").order("name"),
+      supabase.from("projects").select("*").order("deadline"),
+      supabase.from("tasks").select("*"),
+      supabase.from("profiles")
+        .select("*")
+        .eq("is_owner", false)
+        .eq("active", true),
+    ]);
+
+    setClients(c.data || []);
+    setProjects(p.data || []);
+    setTasks(t.data || []);
+    setEmployees(e.data || []);
+
   } catch (e) {
     console.log("LOAD PROFILE ERROR:", e);
     setProfile(null);
@@ -476,8 +492,16 @@ export default function App(){
   const logout=async()=>{await supabase.auth.signOut();setSession(null);setProfile(null);};
 
   if(appLoading)return(<><style>{css}</style><div className="loading-screen"><div className="ll">AGENCY<em>OS</em></div><div className="spinner"/></div></>);
-
-  return(<><style>{css}</style>
+if(session && !profile){
+  return (
+    <>
+      <style>{css}</style>
+      <div className="loading-screen">
+        <div className="spinner"></div>
+      </div>
+    </>
+  );
+}  return(<><style>{css}</style>
     {!session&&<LoginScreen/>}
     {session&&profile?.is_owner&&<OwnShell user={profile} clients={clients} setClients={setClients} projects={projects} setProjects={setProjects} tasks={tasks} setTasks={setTasks} employees={employees} setEmployees={setEmployees} onLogout={logout}/>}
     {session&&profile&&!profile.is_owner&&<EmpView user={profile} clients={clients} projects={projects} tasks={tasks} setTasks={setTasks} employees={employees} onLogout={logout}/>}
