@@ -461,21 +461,6 @@ export default function App(){
 
     setProfile(data);
 
-    const [c,p,t,e] = await Promise.all([
-      supabase.from("clients").select("*").order("name"),
-      supabase.from("projects").select("*").order("deadline"),
-      supabase.from("tasks").select("*"),
-      supabase.from("profiles")
-        .select("*")
-        .eq("is_owner", false)
-        .eq("active", true),
-    ]);
-
-    setClients(c.data || []);
-    setProjects(p.data || []);
-    setTasks(t.data || []);
-    setEmployees(e.data || []);
-
   } catch (e) {
     console.log("LOAD PROFILE ERROR:", e);
     setProfile(null);
